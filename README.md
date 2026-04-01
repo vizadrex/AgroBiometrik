@@ -28,3 +28,5 @@ Para mantener el código escalable, ordenado y fácil de mantener, este proyecto
 
 ## Licencia
 Software Propietario / Uso Empresarial.
+
+![alt text](image.png)
