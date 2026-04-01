@@ -1,43 +1,44 @@
+# Documentación Técnica de AgroBiometrik
 
-# AgroBiometrik Technical Documentation
+## Visión General de la Arquitectura
+AgroBiometrik está construido siguiendo los principios de **Clean Architecture** (Arquitectura Limpia). Esto nos ayuda a mantener todo organizado y que pueda crecer a futuro, dividiendo la aplicación en cuatro grandes capas:
 
-## Architecture Overview
-AgroBiometrik follows **Clean Architecture** principles, separating the application into three main layers:
+1.  **Capa de Dominio (Domain Layer)**: Aquí viven nuestras entidades conceptuales más importantes (como `Animal` y `Embedding`) y las interfaces de los repositorios. Es código Dart puro y duro, sin dependencias complicadas de Flutter ni detalles sobre de dónde vienen los datos.
+2.  **Capa de Datos (Data Layer)**: Esta es la responsable de la información. Aquí definimos los modelos (para leer y escribir JSON o hablar con la base de datos), las fuentes de datos (nuestra implementación real de `sqflite`) y las concreciones de los repositorios.
+3.  **Capa de Presentación (Presentation Layer)**: Todo lo que el usuario ve y con lo que interactúa. Incluye nuestras pantallas, los widgets y toda la lógica para gestionar el estado utilizando BLoC.
+4.  **Capa Central (Core Layer)**: Incluye los servicios base, compartidos por toda la aplicación, destacando de sobremanera el **Motor de Inteligencia Artificial**.
 
-1.  **Domain Layer**: Contains Entities (`Animal`, `Embedding`) and Repository Interfaces. This layer is pure Dart and has no dependencies on Flutter or data sources.
-2.  **Data Layer**: Contains Models (JSON/DB serialization), Data Sources (`sqflite` implementation), and Repository Implementations.
-3.  **Presentation Layer**: Contains UI code (Screens, Widgets) and State Management (BLoC).
-4.  **Core Layer**: Contains shared services, including the **AI Engine**.
+## Motor Biométrico y de IA
+Este es el cerebro detrás de la identificación. Así es como logramos reconocer a los animales:
 
-## AI & Biometrics Engine
+### 1. Preprocesamiento de Imágenes
+Encuéntralo en `lib/core/services/ai/image_preprocessing_service.dart`.
+-   **Redimensionamiento**: Ajustamos todas las fotos a un tamaño estándar manejable de 224x224 píxeles (configurable según el modelo).
+-   **Normalización**: Adaptamos los valores matemáticos de los píxeles a rangos de [0, 1] o [-1, 1], preparándolos óptimamente para el proceso de inferencia en Float32.
 
-### 1. Image Preprocessing
-Located in `lib/core/services/ai/image_preprocessing_service.dart`.
--   **Resize**: Images are resized to 224x224 (configurable).
--   **Normalization**: Pixel values are normalized to [0, 1] or [-1, 1] for Float32 inference.
+### 2. Extracción de Vectores (Embeddings)
+Encuéntralo en `lib/core/services/ai/embedding_service.dart`.
+-   Utilizamos la librería `tflite_flutter` para ejecutar nuestro modelo de aprendizaje profundo directamente en el dispositivo móvil (Edge AI), sin mandar nada a servidores externos.
+-   El resultado de este proceso es un vector de características (por ejemplo, una lista de 128 dimensiones de tipo Float32List) que funciona en la práctica como la "huella digital" del animal.
 
-### 2. Embedding Extraction
-Located in `lib/core/services/ai/embedding_service.dart`.
--   Uses `tflite_flutter` to run inference on edge devices.
--   Outputs a feature vector (e.g., 128-d Float32List) representing the animal's biometric signature.
+### 3. Lógica de Emparejamiento
+Encuéntralo en `lib/core/services/ai/matching_service.dart`.
+-   **Distancia Euclidiana**: Es el cálculo matemático que usamos para comparar la "huella digital" de la foto tomada con todas las huellas que ya tenemos guardadas.
+-   **Umbrales Dinámicos**: (Actualmente en planes). Estamos preparando el sistema para poder ajustar la exigencia de similitud por cada especie; para decidir con mayor precisión si el animal es el mismo o si tenemos que abrir un nuevo registro.
 
-### 3. Matching Logic
-Located in `lib/core/services/ai/matching_service.dart`.
--   **Euclidean Distance**: Used to compare new embeddings against stored ones.
--   **Dynamic Thresholds**: (Planned) Species-specific thresholds to determining identification vs. new registration.
+### 4. Aprendizaje y Mejora Continua
+Encuéntralo en `lib/core/services/ai/learning_service.dart`.
+-   **Aprendizaje Activo (Active Learning)**: El sistema nunca deja de aprender; se vuelve más hábil cada vez que el usuario confirma que una identificación que sugirió es correcta.
+-   **Calidad del Dataset**: Analizamos silenciosamente nuestro propio banco de datos de reconocimiento para limpiar anomalías o balancearlo, manteniendo siempre eficiente al modelo.
 
-### 4. Learning & Quality
-Located in `lib/core/services/ai/learning_service.dart`.
--   **Active Learning**: System learns from user confirmations.
--   **Dataset Quality**: Checks for outliers and dataset balance.
+## Esquema de Base de Datos
+Toda la valiosa información recolectada se guarda de forma segura en la base de datos local del móvil (`sqflite`), la cual organiza los datos en:
+-   **Animales**: El núcleo de las identidades guardadas.
+-   **Embeddings**: Las representaciones matemáticas (vectores) que identifican a cada animal, implementadas con un sistema de versiones.
+-   **Capturas**: El registro histórico de todas las veces y lugares donde se ha reconocido y detectado a los animales.
 
-## Database Schema
-The local database (`sqflite`) stores:
--   **Animals**: Core identity data.
--   **Embeddings**: Vector data linked to animals, with versioning.
--   **Captures**: History of detections.
-
-## Future Roadmap
--   [ ] Implement specific TFLite models for Cattle/Swine.
--   [ ] Add Cloud Sync (using SyncRepository contract).
--   [ ] Enable PDF Reporting.
+## Próximos Pasos (Roadmap)
+Tenemos en la mira las siguientes mejoras a futuro:
+-   [ ] Implementar modelos especializados de TFLite enfocados exclusivamente en Ganado Vacuno y Porcino.
+-   [ ] Añadir la función de Sincronización en la Nube (cumpliendo con el contrato `SyncRepository`).
+-   [ ] Habilitar la exportación detallada de reportes estadísticos en formato PDF.

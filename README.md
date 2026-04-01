@@ -1,31 +1,30 @@
-
 # AgroBiometrik
 
-**AgroBiometrik** is a professional, offline-first mobile application for biometric animal identification using Edge AI.
+**AgroBiometrik** es una aplicación móvil profesional, diseñada para funcionar principalmente sin conexión (offline-first), enfocada en la identificación biométrica de animales utilizando Edge AI (Inteligencia Artificial en el dispositivo).
 
-## Features
--   **AI-Powered Identification**: Identifies animals using facial/body embeddings without tags.
--   **Local Database**: Secure, encrypted SQLite storage for thousands of records.
--   **Offline First**: Works completely without internet in remote areas.
--   **Dashboard Analytics**: Visual insights into population statistics.
+## Características Principales
+-   **Identificación Potenciada por IA**: Reconoce a los animales mediante patrones faciales o corporales, sin necesidad de usar marcas o aretes físicos.
+-   **Base de Datos Local**: Almacenamiento seguro y encriptado en SQLite, capaz de manejar y consultar rápidamente miles de registros directamente en tu dispositivo.
+-   **Diseño "Offline-First"**: Pensada para el campo. Funciona perfectamente en áreas remotas sin depender de una conexión a internet.
+-   **Panel de Analíticas**: Obtén una visión clara de las estadísticas de tu población animal con gráficos e información fácil de interpretar.
 
-## Getting Started
+## Primeros Pasos
 
-### Prerequisites
--   Flutter SDK (Latest Stable)
--   Android Studio / VS Code
+### Requisitos Previos
+-   Tener instalado el Flutter SDK (la versión estable más reciente).
+-   Android Studio o VS Code configurado como tu entorno de desarrollo.
 
-### Installation
-1.  Clone the repository.
-2.  Run `flutter pub get`.
-3.  Connect a device or emulator.
-4.  Run `flutter run`.
+### Instalación
+1.  Clona este repositorio en tu máquina local.
+2.  Ejecuta `flutter pub get` en la terminal para descargar todas las dependencias.
+3.  Conecta tu dispositivo móvil o inicia un emulador.
+4.  Lanza la aplicación con `flutter run`.
 
-### Setup AI Model
-Place your TFLite model in `assets/models/reid_model.tflite` and update `lib/core/services/ai/embedding_service.dart`.
+### Configuración del Modelo de IA
+Para que el reconocimiento funcione, necesitas tu propio modelo entrenado. Simplemente coloca tu archivo TFLite en la ruta `assets/models/reid_model.tflite` y luego actualiza la configuración en `lib/core/services/ai/embedding_service.dart`.
 
-## Architecture
-This project uses Clean Architecture + BLoC.
+## Arquitectura
+Para mantener el código escalable, ordenado y fácil de mantener, este proyecto está construido utilizando los principios de **Clean Architecture** (Arquitectura Limpia) junto con el patrón **BLoC** para gestionar el estado de la aplicación.
 
-## License
-Proprietary / Enterprise.
+## Licencia
+Software Propietario / Uso Empresarial.
