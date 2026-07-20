@@ -1,36 +1,67 @@
-# AgroBiometrik
+# 🐄 AgroBiometrik — Identificación biométrica de animales con IA (offline)
 
-**AgroBiometrik** es una aplicación móvil profesional, diseñada para funcionar principalmente sin conexión (offline-first), enfocada en la identificación biométrica de animales utilizando Edge AI (Inteligencia Artificial en el dispositivo).
+**AgroBiometrik** es una aplicación móvil en **Flutter** que identifica animales de granja **por su apariencia física**, usando la cámara del teléfono y machine learning **directamente en el dispositivo** (Edge AI con TensorFlow Lite). Está pensada para el registro ganadero en zonas rurales: funciona **100% sin internet** y sin necesidad de marcas o aretes físicos.
 
-## Características Principales
--   **Identificación Potenciada por IA**: Reconoce a los animales mediante patrones faciales o corporales, sin necesidad de usar marcas o aretes físicos.
--   **Base de Datos Local**: Almacenamiento seguro y encriptado en SQLite, capaz de manejar y consultar rápidamente miles de registros directamente en tu dispositivo.
--   **Diseño "Offline-First"**: Pensada para el campo. Funciona perfectamente en áreas remotas sin depender de una conexión a internet.
--   **Panel de Analíticas**: Obtén una visión clara de las estadísticas de tu población animal con gráficos e información fácil de interpretar.
+## Capturas
 
-## Primeros Pasos
+![Pantalla principal](image.png)
+![Identificación con cámara](image-1.png)
+![Inventario y dashboard](image-2.png)
 
-### Requisitos Previos
--   Tener instalado el Flutter SDK (la versión estable más reciente).
--   Android Studio o VS Code configurado como tu entorno de desarrollo.
+## Características principales
 
-### Instalación
-1.  Clona este repositorio en tu máquina local.
-2.  Ejecuta `flutter pub get` en la terminal para descargar todas las dependencias.
-3.  Conecta tu dispositivo móvil o inicia un emulador.
-4.  Lanza la aplicación con `flutter run`.
+- 📷 **Registro con fotos:** capturas al animal, la app preprocesa la imagen y extrae su "huella" visual (embedding).
+- 🧠 **Identificación por similitud:** apuntas la cámara y la app te dice **cuál de tus animales registrados es** — o lo marca como desconocido si no supera el umbral de confianza.
+- 📋 **Inventario local:** nombre, especie, raza, fecha y notas de cada animal en SQLite; consulta rápida incluso con miles de registros.
+- 📊 **Panel de analíticas** con estadísticas del hato, gráficos (fl_chart) y **exportación a PDF**.
+- 🔍 **Control de calidad del dataset:** un servicio evalúa si las fotos registradas son suficientemente buenas y variadas para identificar con confianza.
 
-### Configuración del Modelo de IA
-Para que el reconocimiento funcione, necesitas tu propio modelo entrenado. Simplemente coloca tu archivo TFLite en la ruta `assets/models/reid_model.tflite` y luego actualiza la configuración en `lib/core/services/ai/embedding_service.dart`.
+## ¿Cómo funciona la IA?
+
+1. **MobileNetV2** (TensorFlow Lite, incluido en `assets/models/`) convierte cada foto en un **vector de características (embedding)**.
+2. Los embeddings se guardan en SQLite junto con los datos del animal.
+3. Para identificar, se calcula la **distancia euclidiana** entre el embedding de la foto nueva y todos los registrados; los **5 más cercanos "votan"** (k-NN por mayoría) y un umbral de distancia rechaza a los desconocidos.
+
+Todo ocurre en el teléfono: no hay servidor, no hay API, no se necesita señal.
+
+> 💡 El modelo es intercambiable: si entrenas un modelo de re-identificación propio, colócalo en `assets/models/` y actualiza la ruta en `lib/core/services/ai/model_loader_service.dart`.
 
 ## Arquitectura
-Para mantener el código escalable, ordenado y fácil de mantener, este proyecto está construido utilizando los principios de **Clean Architecture** (Arquitectura Limpia) junto con el patrón **BLoC** para gestionar el estado de la aplicación.
 
-## Licencia
-Software Propietario / Uso Empresarial.
+El proyecto sigue **Clean Architecture** con **BLoC** para el estado:
 
+```
+lib/
+├── core/
+│   ├── services/
+│   │   ├── ai/                  # Embeddings, matching, identificación,
+│   │   │                        # preprocesamiento y calidad de dataset
+│   │   ├── camera_service.dart
+│   │   └── service_locator.dart # Inyección de dependencias (get_it)
+│   ├── error/                   # Manejo global de errores + observer de BLoC
+│   └── theme.dart
+├── data/                        # sqflite, modelos, repositorios (implementación)
+├── domain/                      # Entidades y contratos (independiente de Flutter)
+└── presentation/                # Pantallas: cámara, inventario, dashboard
+```
 
-## App
-![alt text](image.png)
-![alt text](image-1.png)
-![alt text](image-2.png)
+## Cómo ejecutarlo
+
+```bash
+flutter pub get
+flutter run
+```
+
+Requisitos: Flutter SDK estable y un dispositivo o emulador **Android** con cámara.
+
+## Tecnologías
+
+- **Flutter / Dart** · `flutter_bloc` · `get_it` · `equatable` · `dartz`
+- **tflite_flutter** + MobileNetV2 (visión por computadora on-device)
+- **sqflite** · **camera** · **fl_chart** · **pdf**
+
+## Lo que aprendí con este proyecto
+
+- Ejecutar redes neuronales **en el teléfono**: preprocesar imágenes al formato del modelo y usar la salida como embedding en lugar de clasificación directa.
+- Que un sistema de identificación no es solo el modelo: el umbral de rechazo, la votación por mayoría y la **calidad del dataset** importan tanto como la red.
+- Aplicar Clean Architecture de verdad en Flutter, con dominio separado de datos y presentación.
